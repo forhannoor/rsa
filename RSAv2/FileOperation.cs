@@ -1,6 +1,4 @@
-﻿/*
- * Handles reading content from designated file if exists
- */
+﻿// Handles file operation.
 
 using System;
 using System.Collections.Generic;
@@ -11,16 +9,15 @@ namespace RSAv2
 {
     class FileOperation
     {
-        private StringBuilder sb;
+        private StringBuilder _stringBuilder;
 
-        public FileOperation() { sb = new StringBuilder(); }
+        public FileOperation() { _stringBuilder = new StringBuilder(); }
 
-        public FileOperation(string fName) { FileName = fName; sb = new StringBuilder(); }
+        public string FileName { get; set; }
 
-        public String FileName { get; set; }
+        public string Content { get; set; }
 
-        public string Content{ get; set; }
-
+        // Reads file content provided its name.
         public IEnumerable<string> Read()
         {
             IEnumerable<string> lines = null;
@@ -28,16 +25,21 @@ namespace RSAv2
             try
             {
                 lines = File.ReadLines(FileName);
-                
-                foreach(string s in lines)
+
+                foreach (string s in lines)
                 {
-                    sb.Append(s);
-                    sb.AppendLine();
+                    _stringBuilder.Append(s);
+                    _stringBuilder.AppendLine();
                 }
 
-                Content = sb.ToString();
+                Content = _stringBuilder.ToString();
+                _stringBuilder.Clear();
             }
-            catch(Exception e)
+            catch (FileNotFoundException e)
+            {
+                Console.WriteLine(e.Message);
+            }
+            catch (ArgumentNullException e)
             {
                 Console.WriteLine(e.Message);
             }

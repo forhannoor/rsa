@@ -8,11 +8,11 @@ namespace RSAv2
     {
         private int [] cipheredText;
         private int p, q, n, phi, d, e;
-        private PrimeNumbers pn;
+        private PrimeNumber pn;
 
         public RSA()
         {
-            pn = new PrimeNumbers();
+            pn = new PrimeNumber();
         }
 
         // generate prime numbers and calculate associated paramters
