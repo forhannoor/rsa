@@ -268,7 +268,8 @@ namespace RSAv2
         public string Decrypt(string message)
         {
             // Translates ciphered int array into plain byte array.
-            byte[] plainText = DecipheredText(_cipheredText, _d, _n);
+            // byte[] plainText = DecipheredText(_cipheredText, _d, _n);
+            byte[] plainText = DecipheredText(message, _d, _n);
             return BytesToString(plainText);
         }
 
