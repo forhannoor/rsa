@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Implements RSA algorithm.
+
+using System;
 using System.Numerics;
 using System.Text;
 

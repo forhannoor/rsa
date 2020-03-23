@@ -11,13 +11,16 @@ namespace RSAv2
     {
         private StringBuilder _stringBuilder;
 
-        public FileOperation() { _stringBuilder = new StringBuilder(); }
+        public FileOperation() 
+        { 
+            _stringBuilder = new StringBuilder(); 
+        }
 
         public string FileName { get; set; }
 
         public string Content { get; set; }
 
-        // Reads file content provided its name.
+        // Reads file and returns its content.
         public IEnumerable<string> Read()
         {
             IEnumerable<string> lines = null;
@@ -26,22 +29,22 @@ namespace RSAv2
             {
                 lines = File.ReadLines(FileName);
 
-                foreach (string s in lines)
+                foreach (var line in lines)
                 {
-                    _stringBuilder.Append(s);
+                    _stringBuilder.Append(line);
                     _stringBuilder.AppendLine();
                 }
 
                 Content = _stringBuilder.ToString();
                 _stringBuilder.Clear();
             }
-            catch (FileNotFoundException e)
+            catch (FileNotFoundException fileNotFoundException)
             {
-                Console.WriteLine(e.Message);
+                Console.WriteLine(fileNotFoundException.Message);
             }
-            catch (ArgumentNullException e)
+            catch (ArgumentNullException argumentNullException)
             {
-                Console.WriteLine(e.Message);
+                Console.WriteLine(argumentNullException.Message);
             }
 
             return lines;
