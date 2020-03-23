@@ -1,6 +1,4 @@
-﻿// Handles prime number operations.
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace RSAv2
@@ -9,76 +7,77 @@ namespace RSAv2
     {
         private int[] _numbers;
         private Random _random;
-        // File name to read prime numbers from.
+        // File to read numbers from.
         private const string SOURCE = "resource/prime_numbers.txt";
         private const int SIZE = 200;
         
+        // Constructor that reads prime numbers from file and initializes list.
         public PrimeNumber(string fileName = null)
         {
             _numbers = new int [SIZE];
             _random = new Random();
-            FileOperation fo = new FileOperation();
-            fo.FileName = fileName ?? SOURCE;
-            IEnumerable<string> nums = fo.Read();
-            var index = 0;
+            var fileOperation = new FileOperation();
+            fileOperation.FileName = fileName ?? SOURCE;
+            IEnumerable<string> numbers = fileOperation.Read();
+            int index = 0;
 
-            // If unable to read prime number file.
-            if(nums == null)
+            // If file reading failed.
+            if(numbers == null)
             {
-                Console.WriteLine("Unable to read prime number file! Terminating program.");
-                // Stop program execution.
+                Console.WriteLine("Unable to read prime numbers from file. Terminating program.");
+                // Exit program.
                 Environment.Exit(1);
             }
 
+            // If file reading succeeded.
             else
             {
-
-                // Initialize prime numbers in the list.
-                foreach (string x in nums)
+                // Initialize list with prime numbers.
+                foreach (var number in numbers)
                 {
-                    _numbers[index++] = int.Parse(x);
+                    _numbers[index++] = int.Parse(number);
                 }
             }
         }
 
-        // Checks for primality given an integer.
-        private bool IsPrime(int a)
+        // Tests for primality.
+        private bool IsPrime(int number)
         {
-            bool r = true;
+            bool isPrime = true;
 
             // If number is already in list.
-            if(a >= _numbers[0] && a <= _numbers[SIZE - 1])
+            if(number >= _numbers[0] && number <= _numbers[SIZE - 1])
             {
-                for(int i = 0; i < SIZE; i++)
+                for(int i = 0; i < SIZE; ++i)
                 {
-                    if(_numbers[i] == a)
+                    if(_numbers[i] == number)
                     {
                         break;
                     }
                 }
             }
 
-            // Number is not in the list, determine mathematically.
+            // If number is not in list, determine mathematically.
             else
             {
-                var limit = (int) Math.Sqrt(a);
+                var limit = (int) Math.Sqrt(number);
 
-                for (int i = 2; r && i <= limit; i++)
+                for (int i = 2; isPrime && i <= limit; ++i)
                 {
-                    if (a % i == 0)
+                    if (number % i == 0)
                     {
-                        r = false;
+                        isPrime = false;
                     }
                 }
             }
             
-            return r;
+            return isPrime;
         }
 
-        // Returns a random prime from list.
+        // Returns a prime number randomly from list.
         public int RandomPrime()
         {
-            var index = _random.Next(0, SIZE);
+            int index = _random.Next(0, SIZE);
             return _numbers[index];
         }
     }

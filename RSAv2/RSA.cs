@@ -6,44 +6,42 @@ namespace RSAv2
 {
     class RSA
     {
-        private int [] cipheredText;
-        private int p, q, n, phi, d, e;
-        private PrimeNumber pn;
+        private int[] _cipheredText;
+        private int _p, _q, _n, _phi, _d, _e;
+        private PrimeNumber _primeNumber;
 
         public RSA()
         {
-            pn = new PrimeNumber();
+            _primeNumber = new PrimeNumber();
         }
 
-        // generate prime numbers and calculate associated paramters
+        // Selects two prime numbers and calculates associated paramters.
         private void SetParameters()
         {
-            p = pn.RandomPrime();
-            q = pn.RandomPrime();
+            _p = _primeNumber.RandomPrime();
+            _q = _primeNumber.RandomPrime();
 
-            if (p > q)
+            if (_p > _q)
             {
-                int t = q;
-                q = p;
-                p = t;
+                var t = _q;
+                _q = _p;
+                _p = t;
             }
 
-            n = p * q;
-            phi = (p - 1) * (q - 1);
+            _n = _p * _q;
+            _phi = (_p - 1) * (_q - 1);
         }
 
-        // determine if two numbers are co-prime
-        // co-primeness exists when GCD/HCF is 1
+        // Determines if two numbers are co-primes (GCD/HCF is 1).
         private bool IsCoPrime(int a, int b)
         {
-            int g = GCD(a, b);
-            return (g == 1) ? true : false;
+            return (GCD(a, b) == 1);
         }
 
-        // determine greatest common divisor / highest common factor
+        // Calculates GCD/HCF between two integers.
         private int GCD(int a, int b)
         {
-            if(a == 0)
+            if (a == 0)
             {
                 return b;
             }
@@ -51,11 +49,12 @@ namespace RSAv2
             return GCD(b % a, a);
         }
 
+        // Determines the value of _e.
         private int E()
         {
-            for(int i = 2; i < phi; i++)
+            for (int i = 2; i < _phi; ++i)
             {
-                if(IsCoPrime(i, phi))
+                if (IsCoPrime(i, _phi))
                 {
                     return i;
                 }
@@ -64,183 +63,220 @@ namespace RSAv2
             return -1;
         }
 
+        // Determines the value of _d.
         private int D(int phi, int e)
         {
             int r = 1;
 
-            while((e * r - 1) % phi != 0)
+            while ((e * r - 1) % phi != 0)
             {
-                r++;
-            }
-
-            d = r;
-            return r;
-        }
-        
-        // convert string to byte array
-        private byte [] StringToByte(string input)
-        {
-            int s = input.Length;
-            byte [] r = new byte [s];
-            char temp;
-            byte t;
-
-            for(int i = 0; i < s; i++)
-            {
-                temp = input [i];
-                t = (byte) temp;
-
-                // char is numeric digit
-                if(Char.IsDigit(temp)) { t = (byte) (t - 48); }
-                
-                // char is blank space
-                else if(temp == ' ') { t = (byte) 199; }
-
-                // char is new line
-                else if(temp == '\n') { t = (byte) 200; }
-
-                // char is carriage return
-                else if(t == 13) { t = (byte) 201; }
-
-                else { t = (byte) (t - 55); }
-                
-                r [i] = t;
+                ++r;
             }
 
             return r;
         }
 
-        // convert byte array to string
-        private string ByteToString(byte [] b)
+        // Converts a string into a byte array.
+        private byte[] StringToBytes(string input)
         {
-            int s = b.Length;
-            StringBuilder sb = new StringBuilder();
-            byte temp;
+            int length = input.Length;
+            byte[] data = new byte[length];
+            char currentChar;
+            byte currentByte;
 
-            for(int i = 0; i < s; i++)
+            for (int i = 0; i < length; ++i)
             {
-                temp = b [i];
+                currentChar = input[i];
+                currentByte = (byte)currentChar;
 
-                // numeric digit
-                if(temp >= 0 && temp <= 9) { temp = (byte) (temp + 48); }
-
-                // white space
-                else if(temp == 199) { temp = (byte) 32; }
-                
-                // new line
-                else if(temp == 200) { temp = (byte) 10; }
-                
-                // carriage return
-                else if(temp == 201) { temp = (byte) 13; }
-
-                else { temp = (byte) (temp + 55); }
-
-                sb.Append((char) temp);
-            }
-            
-            return sb.ToString();
-        }
-
-        // convert int array to string
-        private string IntToString(int [] b)
-        {
-            int l = b.Length;
-            byte [] m = new byte [l];
-
-            for(int i = 0; i < l; i++)
-            {
-                m [i] = (byte) b [i];
-            }
-
-            return Encoding.UTF8.GetString(m);
-        }
-
-        // convert plain text to ciphered text
-        private int [] CipheredText(byte [] a, int e, int n)
-        {
-            int length = a.Length, temp;
-            int [] c = new int [length];
-
-            for(int i = 0; i < length; i++)
-            {
-                temp = a [i];
-
-                if(temp >= 199 && temp <= 201)
+                // If char is a numeric digit (i.e. '1', '2', '0', etc.).
+                if (Char.IsDigit(currentChar))
                 {
-                    c [i] = temp;
-                    continue;
+                    currentByte = (byte)(currentByte - 48);
                 }
 
-                temp = (int) Math.Pow(temp, e);
-                temp %= n;
-                c [i] = temp;
-            }
-
-            return c;
-        }
-
-        // convert ciphered text to plain text
-        private byte [] DecipheredText(int [] a, int d, int n)
-        {
-            int l = a.Length;
-            byte [] r = new byte [l];
-
-            for(int i = 0; i < a.Length; i++)
-            {
-                int temp = a [i];
-
-                /* if temp=199 which represents blankspace, handle it differently */
-                if(temp == 199 || temp == 200 || temp == 201)
+                // If char is a blank space (' ').
+                else if (currentChar == ' ')
                 {
-                    r [i] = (byte) temp;
-                    continue;
+                    currentByte = (byte)199;
                 }
 
-                BigInteger bi = temp;
-                bi = BigInteger.ModPow(bi, d, n);
-                string tempString = bi.ToString();
-                int g = Int32.Parse(tempString);
-                r [i] = (byte) g;
+                // If char is a new line ('\n').
+                else if (currentChar == '\n')
+                {
+                    currentByte = (byte)200;
+                }
+
+                // If char is a carriage return ('\r').
+                else if (currentByte == 13)
+                {
+                    currentByte = (byte)201;
+                }
+
+                else
+                {
+                    currentByte = (byte)(currentByte - 55);
+                }
+
+                data[i] = currentByte;
             }
 
-            return r;
+            return data;
         }
 
-        // encryption
+        // Converts a byte array into a string.
+        private string BytesToString(byte[] input)
+        {
+            int length = input.Length;
+            var stringBuilder = new StringBuilder();
+            byte currentByte;
+
+            for (int i = 0; i < length; ++i)
+            {
+                currentByte = input[i];
+
+                // If current byte represents a numeric digit.
+                if (currentByte >= 0 && currentByte <= 9)
+                {
+                    currentByte = (byte)(currentByte + 48);
+                }
+
+                // If current byte represents a white space.
+                else if (currentByte == 199)
+                {
+                    currentByte = 32;
+                }
+
+                // If current byte represents a new line.
+                else if (currentByte == 200)
+                {
+                    currentByte = 10;
+                }
+
+                // If current byte represents a carriage return.
+                else if (currentByte == 201)
+                {
+                    currentByte = 13;
+                }
+
+                else
+                {
+                    currentByte = (byte)(currentByte + 55);
+                }
+
+                stringBuilder.Append((char)currentByte);
+            }
+
+            return stringBuilder.ToString();
+        }
+
+        // Converts an int array into a string.
+        private string IntsToString(int[] numbers)
+        {
+            int length = numbers.Length;
+            var bytes = new byte[length];
+
+            for (int i = 0; i < length; ++i)
+            {
+                bytes[i] = (byte)numbers[i];
+            }
+
+            return Encoding.UTF8.GetString(bytes);
+        }
+
+        // Translates plain text into ciphered text.
+        private int[] CipheredText(byte[] data, int e, int n)
+        {
+            int length = data.Length, temp;
+            var result = new int[length];
+
+            for (int i = 0; i < length; ++i)
+            {
+                temp = data[i];
+
+                if (temp >= 199 && temp <= 201)
+                {
+                    result[i] = temp;
+                }
+
+                else
+                {
+                    temp = (int)Math.Pow(temp, e);
+                    temp %= n;
+                    result[i] = temp;
+                }
+            }
+
+            return result;
+        }
+
+        // Translates ciphered text into plain text.
+        private byte[] DecipheredText(int[] data, int d, int n)
+        {
+            int length = data.Length, temp;
+            var bytes = new byte[length];
+            BigInteger bigInt;
+
+            for (int i = 0; i < data.Length; ++i)
+            {
+                temp = data[i];
+
+                // If temp represents whitespace, newline or carriage return.
+                if (temp >= 199 && temp <= 201)
+                {
+                    bytes[i] = (byte)temp;
+                }
+
+                else
+                {
+                    bigInt = temp;
+                    bigInt = BigInteger.ModPow(bigInt, d, n);
+                    temp = Int32.Parse(bigInt.ToString());
+                    bytes[i] = (byte)temp;
+                }
+            }
+
+            return bytes;
+        }
+
+        // Returns string version of encrypted message.
         public string Encrypt(string message)
         {
+            // Initialize parameters required for encryption.
             SetParameters();
-            byte [] arr = StringToByte(message);
-            e = E();
-            d = D(phi, e);
-            cipheredText = CipheredText(arr, e, n);
-            StringBuilder builder = new StringBuilder();
-            int len = cipheredText.Length;
-            
-            for(int j = 0; j < len; j++)
+            // Translate string into a byte array.
+            byte[] bytes = StringToBytes(message);
+            // Determine the value of _e and _d.
+            _e = E();
+            _d = D(_phi, _e);
+            // Translate plain byte array into ciphered int array.
+            _cipheredText = CipheredText(bytes, _e, _n);
+            var stringBuilder = new StringBuilder();
+            int length = _cipheredText.Length;
+
+            for (int j = 0; j < length; ++j)
             {
-                builder.Append(cipheredText[j]);
+                stringBuilder.Append(_cipheredText[j]);
             }
 
-            return builder.ToString();
+            return stringBuilder.ToString();
         }
 
-        // decryption
+        // Returns string version of decrypted message.
         public string Decrypt(string message)
         {
-            char [] temp = message.ToCharArray();
-            byte [] plainText = DecipheredText(cipheredText, d, n);
-            string decipheredText = ByteToString(plainText);
-            return decipheredText;
+            // Translates ciphered int array into plain byte array.
+            byte[] plainText = DecipheredText(_cipheredText, _d, _n);
+            return BytesToString(plainText);
         }
 
         public int GetN
-        { get { return n; } set { n = value; } }
+        { get { return _n; } set { _n = value; } }
 
         public int GetD
-        { get { return d; } set { d = value; } }
+        { get { return _d; } set { _d = value; } }
 
         public int GetE
-        { get { return e; } set { e = value; } }
+        { get { return _e; } set { _e = value; } }
     }
 }
